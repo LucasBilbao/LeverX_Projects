@@ -95,8 +95,7 @@ public class AppConfig implements WebMvcConfigurer {
 
     @Bean
     public DataSourceInitializer dataSourceInitializer(
-            DataSource dataSource,
-            EntityManagerFactory entityManagerFactory
+            DataSource dataSource
     ) {
         DataSourceInitializer initializer = new DataSourceInitializer();
         initializer.setDataSource(dataSource);
