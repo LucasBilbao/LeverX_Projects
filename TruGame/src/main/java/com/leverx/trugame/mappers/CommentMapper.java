@@ -1,6 +1,7 @@
 package com.leverx.trugame.mappers;
 
 import com.leverx.trugame.entities.CommentEntity;
+import com.leverx.trugame.entities.GameEntity;
 import com.leverx.trugame.entities.UserEntity;
 import com.leverx.trugame.requests.comments.CreateCommentRequestDto;
 import com.leverx.trugame.responses.CommentResponseDto;
@@ -19,11 +20,12 @@ public class CommentMapper {
                 .build();
     }
 
-    public static CommentEntity fromRequestToEntity(CreateCommentRequestDto comment, UserEntity author) {
+    public static CommentEntity fromRequestToEntity(CreateCommentRequestDto comment, UserEntity author, GameEntity game) {
         return CommentEntity.builder()
                 .message(comment.getMessage())
-                .author(author)
                 .rating(comment.getRating())
+                .author(author)
+                .game(game)
                 .build();
     }
 
