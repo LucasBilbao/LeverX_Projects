@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import org.springframework.data.annotation.CreatedDate;
+import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -33,15 +33,26 @@ public class CommentEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private int id;
 
     @Column
     private String message;
+
+    @Column(nullable = false)
+    private short rating;
+
+    @Column(nullable = false, name = "is_approved")
+    private boolean isApproved = false;
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "author_id", nullable = false)
     private UserEntity author;
 
-    @CreatedDate
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "game_id", nullable = false)
+    private GameEntity game;
+
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 }
