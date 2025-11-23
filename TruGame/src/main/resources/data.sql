@@ -7,10 +7,15 @@ DELETE
 
 
 -- USERS (1000 - 1002)
-INSERT INTO USERS (id, firstName, lastName, password, email, role, is_approved, createdAt)
-VALUES (1000, 'John',  'Doe',     '$2a$10$M4rfctMUIml7ldSmyV02oe.dNoYw88pKacLHQBCbKdRkC5zXKXC3O', 'john.doe@example.com',    'ADMIN',     TRUE, NOW()),
-       (1001, 'Alice', 'Smith',   '$2a$10$M4rfctMUIml7ldSmyV02oe.dNoYw88pKacLHQBCbKdRkC5zXKXC3O', 'alice.smith@example.com', 'SELLER',    TRUE, NOW()),
-       (1002, 'Bob',   'Johnson', '$2a$10$M4rfctMUIml7ldSmyV02oe.dNoYw88pKacLHQBCbKdRkC5zXKXC3O', 'bob.johnson@example.com', 'ANONYMOUS', TRUE, NOW());
+INSERT INTO USERS (id, firstName, lastName, password, email, role, is_approved, has_confirmed_email, createdAt)
+VALUES (1000, 'John',  'Doe',     '$2a$10$M4rfctMUIml7ldSmyV02oe.dNoYw88pKacLHQBCbKdRkC5zXKXC3O', 'john.doe@example' ||
+                                                                                                  '.com', 'ADMIN',     TRUE, TRUE, NOW()),
+       (1001, 'Alice', 'Smith',   '$2a$10$M4rfctMUIml7ldSmyV02oe.dNoYw88pKacLHQBCbKdRkC5zXKXC3O', 'alice' ||
+                                                                                                  '.smith@example' ||
+                                                                                                  '.com', 'SELLER',    TRUE, TRUE, NOW()),
+       (1002, 'Bob',   'Johnson', '$2a$10$M4rfctMUIml7ldSmyV02oe.dNoYw88pKacLHQBCbKdRkC5zXKXC3O', 'bob' ||
+                                                                                                  '.johnson@example' ||
+                                                                                                  '.com', 'ANONYMOUS', TRUE, TRUE, NOW());
 
 -- GAMES (3000 - 3003)
 INSERT INTO GAMES (id, title, text, user_id, createdAt, updatedAt)

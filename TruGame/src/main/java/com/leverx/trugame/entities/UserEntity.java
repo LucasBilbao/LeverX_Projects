@@ -58,6 +58,9 @@ public class UserEntity {
     @Column(nullable = false, name = "is_approved")
     private boolean isApproved = false;
 
+    @Column(nullable = false, name = "has_confirmed_email")
+    private boolean hasConfirmedEmail = false;
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

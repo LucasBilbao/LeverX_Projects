@@ -11,9 +11,13 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.datasource.init.DataSourceInitializer;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.validation.Validator;
@@ -22,11 +26,15 @@ import org.springframework.validation.beanvalidation.MethodValidationPostProcess
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.thymeleaf.spring5.SpringTemplateEngine;
+import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 import java.util.Properties;
+import java.util.concurrent.Executor;
 
+@EnableAsync
 @EnableWebMvc
 @Configuration
 @EnableTransactionManagement
@@ -58,6 +66,24 @@ public class AppConfig implements WebMvcConfigurer {
 
     @Value("${hibernate.format_sql}")
     private String formatSql;
+
+    @Value("${spring.mail.host}")
+    private String mailHost;
+
+    @Value("${spring.mail.port}")
+    private int mailPort;
+
+    @Value("${spring.mail.username}")
+    private String mailUser;
+
+    @Value("${spring.mail.password}")
+    private String mailPassword;
+
+    @Value("${spring.mail.properties.mail.smtp.auth:false}")
+    private boolean mailSmtpAuth;
+
+    @Value("${spring.mail.properties.mail.smtp.starttls.enable:false}")
+    private boolean mailStartTls;
 
     @Bean
     public static PropertySourcesPlaceholderConfigurer pspc() {
@@ -147,5 +173,47 @@ public class AppConfig implements WebMvcConfigurer {
         MethodValidationPostProcessor p = new MethodValidationPostProcessor();
         p.setValidator(localValidatorFactoryBean());
         return p;
+    }
+
+    @Bean
+    public JavaMailSender javaMailSender() {
+        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+        mailSender.setHost(this.mailHost);
+        mailSender.setPort(this.mailPort);
+        mailSender.setUsername(this.mailUser);
+        mailSender.setPassword(this.mailPassword);
+
+        Properties props = mailSender.getJavaMailProperties();
+        props.put("mail.transport.protocol", "smtp");
+        props.put("mail.smtp.auth", String.valueOf(this.mailSmtpAuth));
+        props.put("mail.smtp.starttls.enable", String.valueOf(this.mailStartTls));
+        props.put("mail.debug", "false");
+
+        return mailSender;
+    }
+
+    @Bean("emailExecutor")
+    public Executor emailExecutor() {
+        ThreadPoolTaskExecutor ex = new ThreadPoolTaskExecutor();
+        ex.setCorePoolSize(2);
+        ex.setMaxPoolSize(5);
+        ex.setQueueCapacity(50);
+        ex.setThreadNamePrefix("email-exec-");
+        ex.initialize();
+        return ex;
+    }
+
+    @Bean
+    public SpringTemplateEngine springTemplateEngine() {
+        ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
+        templateResolver.setPrefix("templates/");
+        templateResolver.setSuffix(".html");
+        templateResolver.setTemplateMode("HTML");
+        templateResolver.setCharacterEncoding("UTF-8");
+        templateResolver.setCacheable(false);
+
+        SpringTemplateEngine engine = new SpringTemplateEngine();
+        engine.setTemplateResolver(templateResolver);
+        return engine;
     }
 }

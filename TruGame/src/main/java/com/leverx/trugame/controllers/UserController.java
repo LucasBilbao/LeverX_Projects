@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
@@ -82,9 +83,9 @@ public class UserController extends BaseController {
         );
     }
 
-    @PostMapping("/reset/{code}")
+    @PostMapping("/reset")
     public ResponseEntity<ApiResponse> resetPassword(
-            @PathVariable String code,
+            @RequestParam String code,
             @Valid
             @RequestBody
             ResetUserRequestDto req
@@ -109,5 +110,18 @@ public class UserController extends BaseController {
                         this.userService.authenticate(req)
                 )
         );
+    }
+
+    @GetMapping("/confirm")
+    public ResponseEntity<ApiResponse> confirm(
+            @RequestParam String code
+    ) {
+        return this.run(() -> {
+            this.userService.confirmEmail(code);
+
+            return ResponseFactory.success(
+                    "Email has been successfully confirmed."
+            );
+        });
     }
 }
