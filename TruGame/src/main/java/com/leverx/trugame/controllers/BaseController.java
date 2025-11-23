@@ -1,0 +1,23 @@
+package com.leverx.trugame.controllers;
+
+import com.leverx.trugame.exceptions.NotFoundException;
+import com.leverx.trugame.web.ResponseFactory;
+import com.leverx.trugame.web.dto.ApiResponse;
+import org.springframework.http.ResponseEntity;
+
+public class BaseController {
+
+    protected ResponseEntity<ApiResponse> run(ControllerAction action) {
+        try {
+            return action.execute();
+        } catch (NotFoundException e) {
+            return ResponseFactory.error(e.getMessage());
+        }
+    }
+
+    @FunctionalInterface
+    protected interface ControllerAction {
+
+        ResponseEntity<ApiResponse> execute() throws NotFoundException;
+    }
+}
