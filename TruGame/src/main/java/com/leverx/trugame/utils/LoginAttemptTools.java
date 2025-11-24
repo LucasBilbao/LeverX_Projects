@@ -16,12 +16,12 @@ public class LoginAttemptTools {
         lockTimeCache.remove(username);
     }
 
-    public static void loginFailed(String username) {
-        int attempts = attemptsCache.getOrDefault(username, 0) + 1;
-        attemptsCache.put(username, attempts);
+    public static void loginFailed(String email) {
+        int attempts = attemptsCache.getOrDefault(email, 0) + 1;
+        attemptsCache.put(email, attempts);
 
         if (attempts >= MAX_ATTEMPTS) {
-            lockTimeCache.put(username, System.currentTimeMillis() + LOCK_TIME);
+            lockTimeCache.put(email, System.currentTimeMillis() + LOCK_TIME);
         }
     }
 

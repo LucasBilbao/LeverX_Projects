@@ -11,4 +11,5 @@
 
     <logger name="org.hibernate.SQL" level="OFF"/>
     <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="OFF"/>
+    <logger name="org.springframework.security" level="DEBUG"/>
 </configuration>

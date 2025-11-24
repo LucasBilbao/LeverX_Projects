@@ -167,15 +167,17 @@ public class UserService {
             throw new NotFoundException("User with email: " + req.getEmail() + " not found.");
         }
 
-        if (!PasswordEncryptor.matches(req.getPassword(), user.getPassword())) {
-            throw new IncorrectPasswordException();
-        }
         if (LoginAttemptTools.isBlocked(user.getEmail())) {
             long millis = LoginAttemptTools.getMillsToUnlock(user.getEmail()) - System.currentTimeMillis();
 
             long minutes = TimeUnit.MILLISECONDS.toMinutes(millis);
             long seconds = TimeUnit.MILLISECONDS.toSeconds(millis) - TimeUnit.MINUTES.toSeconds(minutes);
             throw new LoginBlockedException(minutes, seconds);
+        }
+
+        if (!PasswordEncryptor.matches(req.getPassword(), user.getPassword())) {
+            LoginAttemptTools.loginFailed(user.getEmail());
+            throw new IncorrectPasswordException();
         }
 
         UserDetails userDetails = UserMapper.fromEntityToDetails(user);
