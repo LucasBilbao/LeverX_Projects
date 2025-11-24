@@ -7,7 +7,11 @@ import com.leverx.trugame.requests.users.RegisterUserRequestDto;
 import com.leverx.trugame.requests.users.ResetUserRequestDto;
 import com.leverx.trugame.services.UserService;
 import com.leverx.trugame.web.ResponseFactory;
-import com.leverx.trugame.web.dto.ApiResponse;
+import com.leverx.trugame.web.dto.CustomApiResponse;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,13 +32,19 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
+@Api(value = "User Management", tags = {"User Controller"})
 public class UserController extends BaseController {
 
     private final UserService userService;
 
+    @Operation(summary = "Register user", description = "Register new user")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "User was registered successfully"),
+            @ApiResponse(code = 404, message = "User could not be registered"),
+    })
     @PermitAll
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse> registerUser(
+    public ResponseEntity<CustomApiResponse> registerUser(
             @Valid
             @RequestBody
             RegisterUserRequestDto req
@@ -49,22 +59,38 @@ public class UserController extends BaseController {
         );
     }
 
+    @Operation(summary = "Approve user", description = "Approve user by id")
+    @ApiResponses(value = {
+            @ApiResponse(code = 202, message = "User was approved successfully"),
+            @ApiResponse(code = 404, message = "User could not be approved"),
+            @ApiResponse(code = 401, message = "Authentication required"),
+            @ApiResponse(code = 403, message = "Access denied")
+    })
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/approve/{userId}")
-    public ResponseEntity<ApiResponse> approveById(@PathVariable int userId) {
+    public ResponseEntity<CustomApiResponse> approveById(@PathVariable int userId) {
         return this.run(() -> {
             this.userService.approveUserById(userId);
 
             return ResponseFactory.success(
-                    "User with id: " + userId + " has been approved successfully.",
+                    Map.of(
+                            "message", "User with id: " + userId + " has been approved successfully."
+                    ),
                     HttpStatus.ACCEPTED
             );
         });
     }
 
+    @Operation(summary = "Get unapproved users", description = "Get all unapproved users")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Users were found successfully"),
+            @ApiResponse(code = 404, message = "Users could not be found"),
+            @ApiResponse(code = 401, message = "Authentication required"),
+            @ApiResponse(code = 403, message = "Access denied")
+    })
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/unapproved")
-    public ResponseEntity<ApiResponse> getAllUnapproved() {
+    public ResponseEntity<CustomApiResponse> getAllUnapproved() {
         return this.run(() ->
                 ResponseFactory.success(
                         this.userService.findAllNotApproved()
@@ -75,9 +101,14 @@ public class UserController extends BaseController {
         );
     }
 
+    @Operation(summary = "Forgot password", description = "Request password change by email")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Request was sent successfully"),
+            @ApiResponse(code = 404, message = "Request could not be sent"),
+    })
     @PermitAll
     @PostMapping("/forgot_password")
-    public ResponseEntity<ApiResponse> forgotPassword(
+    public ResponseEntity<CustomApiResponse> forgotPassword(
             @Valid
             @RequestBody
             ForgotPasswordUserRequestDto req
@@ -90,9 +121,15 @@ public class UserController extends BaseController {
         );
     }
 
+    @Operation(summary = "Reset password", description = "Reset password by code")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Password was reset successfully"),
+            @ApiResponse(code = 404, message = "Password could not be reset"),
+            @ApiResponse(code = 410, message = "Password could not be reset - invalid code"),
+    })
     @PermitAll
     @PostMapping("/reset")
-    public ResponseEntity<ApiResponse> resetPassword(
+    public ResponseEntity<CustomApiResponse> resetPassword(
             @RequestParam String code,
             @Valid
             @RequestBody
@@ -102,14 +139,22 @@ public class UserController extends BaseController {
             this.userService.resetPassword(code, req);
 
             return ResponseFactory.success(
-                    "Password has been successfully changed."
+                    Map.of(
+                            "message", "Password has been successfully changed."
+                    )
             );
         });
     }
 
+    @Operation(summary = "Login user", description = "Login user by getting a jwt token")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "User logged in successfully"),
+            @ApiResponse(code = 404, message = "Could could not be logged in"),
+            @ApiResponse(code = 410, message = "Failed to login too many times")
+    })
     @PermitAll
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse> login(
+    public ResponseEntity<CustomApiResponse> login(
             @Valid
             @RequestBody
             AuthenticateUserRequestDto req
@@ -123,16 +168,23 @@ public class UserController extends BaseController {
         );
     }
 
+    @Operation(summary = "Confirm email", description = "Confirm email by id")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Email was confirmed successfully"),
+            @ApiResponse(code = 410, message = "Email could not be confirmed - code was incorrect"),
+    })
     @PermitAll
     @GetMapping("/confirm")
-    public ResponseEntity<ApiResponse> confirm(
+    public ResponseEntity<CustomApiResponse> confirm(
             @RequestParam String code
     ) {
         return this.run(() -> {
             this.userService.confirmEmail(code);
 
             return ResponseFactory.success(
-                    "Email has been successfully confirmed."
+                    Map.of(
+                            "message", "Email has been successfully confirmed."
+                    )
             );
         });
     }

@@ -6,7 +6,11 @@ import com.leverx.trugame.requests.games.CreateGameRequestDto;
 import com.leverx.trugame.requests.games.UpdateGameRequestDto;
 import com.leverx.trugame.services.GameService;
 import com.leverx.trugame.web.ResponseFactory;
-import com.leverx.trugame.web.dto.ApiResponse;
+import com.leverx.trugame.web.dto.CustomApiResponse;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,18 +26,26 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.security.PermitAll;
 import javax.validation.Valid;
+import java.util.Map;
 
 @RequiredArgsConstructor
 
 @RestController
 @RequestMapping("/games")
+@Api(value = "Game Management", tags = {"Game Controller"})
 public class GameController extends BaseController {
 
     private final GameService gameService;
 
+    @Operation(summary = "Update game", description = "Update game by id")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Game was updated successfully"),
+            @ApiResponse(code = 404, message = "Game could not be updated"),
+            @ApiResponse(code = 401, message = "Authentication required")
+    })
     @PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse> updateGame(
+    public ResponseEntity<CustomApiResponse> updateGame(
             @PathVariable int id,
             @Valid @RequestBody UpdateGameRequestDto req
     ) {
@@ -46,9 +58,15 @@ public class GameController extends BaseController {
         });
     }
 
+    @Operation(summary = "Create game", description = "Create game by user")
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Game was created successfully"),
+            @ApiResponse(code = 404, message = "Game could not be created"),
+            @ApiResponse(code = 401, message = "Authentication required")
+    })
     @PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")
     @PostMapping
-    public ResponseEntity<ApiResponse> createGame(
+    public ResponseEntity<CustomApiResponse> createGame(
             @Valid
             @RequestBody
             CreateGameRequestDto req
@@ -63,9 +81,14 @@ public class GameController extends BaseController {
         });
     }
 
+    @Operation(summary = "Get games", description = "Get all games")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Games were found successfully"),
+            @ApiResponse(code = 404, message = "Games could not be found"),
+    })
     @PermitAll
     @GetMapping
-    public ResponseEntity<ApiResponse> getGames() {
+    public ResponseEntity<CustomApiResponse> getGames() {
         return this.run(() ->
                 ResponseFactory.success(
                         this.gameService.findAllGames()
@@ -76,9 +99,14 @@ public class GameController extends BaseController {
         );
     }
 
+    @Operation(summary = "Get game", description = "Get game by id")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Game was found successfully"),
+            @ApiResponse(code = 404, message = "Game could not be found")
+    })
     @PermitAll
     @GetMapping("/{gameId}")
-    public ResponseEntity<ApiResponse> getGameById(@PathVariable int gameId) {
+    public ResponseEntity<CustomApiResponse> getGameById(@PathVariable int gameId) {
         return this.run(() ->
                 ResponseFactory.success(
                         GameMapper.fromEntityToResponse(
@@ -88,14 +116,22 @@ public class GameController extends BaseController {
         );
     }
 
+    @Operation(summary = "Delete game", description = "Delete game by id")
+    @ApiResponses(value = {
+            @ApiResponse(code = 202, message = "Game was deleted successfully"),
+            @ApiResponse(code = 404, message = "Game could not be deleted"),
+            @ApiResponse(code = 401, message = "Authentication required"),
+    })
     @PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")
     @DeleteMapping("/{gameId}")
-    public ResponseEntity<ApiResponse> deleteGame(@PathVariable int gameId) {
+    public ResponseEntity<CustomApiResponse> deleteGame(@PathVariable int gameId) {
         return this.run(() -> {
             this.gameService.deleteGameById(gameId);
 
             return ResponseFactory.success(
-                    "Game with id: " + gameId + " deleted successfully",
+                    Map.of(
+                            "message", "Game with id:" + gameId + " deleted successfully "
+                    ),
                     HttpStatus.ACCEPTED
             );
         });

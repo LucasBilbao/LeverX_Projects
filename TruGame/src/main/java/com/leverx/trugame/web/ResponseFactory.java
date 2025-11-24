@@ -1,16 +1,16 @@
 package com.leverx.trugame.web;
 
-import com.leverx.trugame.web.dto.ApiError;
-import com.leverx.trugame.web.dto.ApiResponse;
-import com.leverx.trugame.web.dto.ApiSuccess;
+import com.leverx.trugame.web.dto.CustomApiError;
+import com.leverx.trugame.web.dto.CustomApiResponse;
+import com.leverx.trugame.web.dto.CustomApiSuccess;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 public final class ResponseFactory {
 
-    public static ResponseEntity<ApiResponse> error(String message, HttpStatus status) {
+    public static ResponseEntity<CustomApiResponse> error(String message, HttpStatus status) {
         return ResponseEntity.status(status).body(
-                ApiError.builder()
+                CustomApiError.builder()
                         .error(status.getReasonPhrase())
                         .status(status.value())
                         .message(message)
@@ -18,20 +18,20 @@ public final class ResponseFactory {
         );
     }
 
-    public static ResponseEntity<ApiResponse> error(String message) {
+    public static ResponseEntity<CustomApiResponse> error(String message) {
         return error(message, HttpStatus.NOT_FOUND);
     }
 
-    public static <T> ResponseEntity<ApiResponse> success(T data, HttpStatus status) {
+    public static <T> ResponseEntity<CustomApiResponse> success(T data, HttpStatus status) {
         return ResponseEntity.status(status).body(
-                ApiSuccess.builder()
+                CustomApiSuccess.builder()
                         .status(status.value())
                         .data(data)
                         .build()
         );
     }
 
-    public static <T> ResponseEntity<ApiResponse> success(T data) {
+    public static <T> ResponseEntity<CustomApiResponse> success(T data) {
         return success(data, HttpStatus.OK);
     }
 }

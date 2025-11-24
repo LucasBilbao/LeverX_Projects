@@ -100,10 +100,6 @@ public class UserService {
 
     @Transactional
     public void approveUserById(int userId) throws NotFoundException {
-        if (!this.existsById(userId)) {
-            throw new NotFoundException("User with id: " + userId + " not found.");
-        }
-
         UserEntity user = this.findUserById(userId);
         user.setApproved(true);
         this.repo.save(user);

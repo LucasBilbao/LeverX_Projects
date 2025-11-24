@@ -4,13 +4,13 @@ import com.leverx.trugame.exceptions.ConfirmationCodeException;
 import com.leverx.trugame.exceptions.LoginBlockedException;
 import com.leverx.trugame.exceptions.NotFoundException;
 import com.leverx.trugame.web.ResponseFactory;
-import com.leverx.trugame.web.dto.ApiResponse;
+import com.leverx.trugame.web.dto.CustomApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 public class BaseController {
 
-    protected ResponseEntity<ApiResponse> run(ControllerAction action) {
+    protected ResponseEntity<CustomApiResponse> run(ControllerAction action) {
         try {
             return action.execute();
         } catch (NotFoundException e) {
@@ -25,6 +25,6 @@ public class BaseController {
     @FunctionalInterface
     protected interface ControllerAction {
 
-        ResponseEntity<ApiResponse> execute() throws NotFoundException;
+        ResponseEntity<CustomApiResponse> execute() throws NotFoundException;
     }
 }
