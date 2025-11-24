@@ -64,7 +64,7 @@ public class CommentService {
         if (authentication == null || !authentication.isAuthenticated()) {
             return null;
         }
-        UserEntity user = null;
+        UserEntity user;
 
         if (
                 authentication.getPrincipal() instanceof String &&

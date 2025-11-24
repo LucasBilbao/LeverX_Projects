@@ -13,13 +13,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalSecurityExceptionHandler {
 
     @ExceptionHandler(AuthenticationCredentialsNotFoundException.class)
-    public ResponseEntity<ApiResponse> handleAuthenticationCredentialsNotFound(
-            AuthenticationCredentialsNotFoundException ex) {
+    public ResponseEntity<ApiResponse> handleAuthenticationCredentialsNotFound() {
         return ResponseFactory.error("Authentication required", HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ApiResponse> handleAccessDenied(AccessDeniedException ex) {
+    public ResponseEntity<ApiResponse> handleAccessDenied() {
         return ResponseFactory.error("Access Denied", HttpStatus.FORBIDDEN);
     }
 }
