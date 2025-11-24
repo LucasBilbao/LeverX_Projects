@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333333;
+        }
+
+        p {
+            font-size: 16px;
+            line-height: 1.5;
+            margin-right: auto;
+            margin-left: auto;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        p.greeting {
+            text-align: left;
+        }
+
+        a.button {
+            display: inline-block;
+            padding: 12px 25px;
+            background-color: #1a73e8;
+            color: #ffffff !important;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        a.button:hover {
+            background-color: #155ab6;
+        }
+
+        .footer {
+            font-size: 12px;
+            color: #888888;
+            margin-top: 30px;
+            text-align: center;
+        }
+    </style>
+    <title>TruGame</title>
+</head>
+<body>
+<div class="email-container">
+    <p class="greeting" th:text="${greeting}">Hello,</p>
+    <p th:text="${message}">Click below to confirm your account:</p>
+    <p><a class="button" th:href="${link}">Click here</a></p>
+    <p class="footer">If you didn't request this, ignore this email.</p>
+</div>
+</body>
+</html>
