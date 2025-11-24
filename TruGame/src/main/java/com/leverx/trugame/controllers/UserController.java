@@ -11,6 +11,7 @@ import com.leverx.trugame.web.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,7 +20,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.security.PermitAll;
 import javax.validation.Valid;
+import java.util.Map;
 
 @RequiredArgsConstructor
 
@@ -29,6 +32,7 @@ public class UserController extends BaseController {
 
     private final UserService userService;
 
+    @PermitAll
     @PostMapping("/register")
     public ResponseEntity<ApiResponse> registerUser(
             @Valid
@@ -45,8 +49,9 @@ public class UserController extends BaseController {
         );
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/approve/{userId}")
-    public ResponseEntity<ApiResponse> getApprovedByGameId(@PathVariable int userId) {
+    public ResponseEntity<ApiResponse> approveById(@PathVariable int userId) {
         return this.run(() -> {
             this.userService.approveUserById(userId);
 
@@ -57,6 +62,7 @@ public class UserController extends BaseController {
         });
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/unapproved")
     public ResponseEntity<ApiResponse> getAllUnapproved() {
         return this.run(() ->
@@ -69,6 +75,7 @@ public class UserController extends BaseController {
         );
     }
 
+    @PermitAll
     @PostMapping("/forgot_password")
     public ResponseEntity<ApiResponse> forgotPassword(
             @Valid
@@ -83,6 +90,7 @@ public class UserController extends BaseController {
         );
     }
 
+    @PermitAll
     @PostMapping("/reset")
     public ResponseEntity<ApiResponse> resetPassword(
             @RequestParam String code,
@@ -99,6 +107,7 @@ public class UserController extends BaseController {
         });
     }
 
+    @PermitAll
     @PostMapping("/login")
     public ResponseEntity<ApiResponse> login(
             @Valid
@@ -107,11 +116,14 @@ public class UserController extends BaseController {
     ) {
         return this.run(() ->
                 ResponseFactory.success(
-                        this.userService.authenticate(req)
+                        Map.of(
+                                "token", this.userService.authenticate(req)
+                        )
                 )
         );
     }
 
+    @PermitAll
     @GetMapping("/confirm")
     public ResponseEntity<ApiResponse> confirm(
             @RequestParam String code

@@ -1,6 +1,7 @@
 package com.leverx.trugame.controllers;
 
 import com.leverx.trugame.exceptions.ConfirmationCodeException;
+import com.leverx.trugame.exceptions.LoginBlockedException;
 import com.leverx.trugame.exceptions.NotFoundException;
 import com.leverx.trugame.web.ResponseFactory;
 import com.leverx.trugame.web.dto.ApiResponse;
@@ -16,7 +17,7 @@ public class BaseController {
             return ResponseFactory.error(e.getMessage());
         } catch (IllegalArgumentException e) {
             return ResponseFactory.error(e.getMessage(), HttpStatus.UNAUTHORIZED);
-        } catch (ConfirmationCodeException e) {
+        } catch (ConfirmationCodeException | LoginBlockedException e) {
             return ResponseFactory.error(e.getMessage(), HttpStatus.GONE);
         }
     }

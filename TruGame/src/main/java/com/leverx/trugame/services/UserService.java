@@ -1,8 +1,10 @@
 package com.leverx.trugame.services;
 
+import com.leverx.trugame.entities.Role;
 import com.leverx.trugame.entities.UserEntity;
 import com.leverx.trugame.exceptions.ConfirmationCodeException;
 import com.leverx.trugame.exceptions.IncorrectPasswordException;
+import com.leverx.trugame.exceptions.LoginBlockedException;
 import com.leverx.trugame.exceptions.NotFoundException;
 import com.leverx.trugame.mappers.UserMapper;
 import com.leverx.trugame.repositories.UserRepository;
@@ -10,16 +12,19 @@ import com.leverx.trugame.requests.users.AuthenticateUserRequestDto;
 import com.leverx.trugame.requests.users.ForgotPasswordUserRequestDto;
 import com.leverx.trugame.requests.users.RegisterUserRequestDto;
 import com.leverx.trugame.requests.users.ResetUserRequestDto;
+import com.leverx.trugame.utils.LoginAttemptTools;
 import com.leverx.trugame.utils.PasswordEncryptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @RequiredArgsConstructor
 
@@ -36,12 +41,25 @@ public class UserService {
 
     private final UserRepository repo;
 
+    private final JwtService jwtService;
+
     @Value("${BASE_URL}")
     private String BASE_URL;
 
     @Transactional(readOnly = true)
     public UserEntity findUserById(int id) throws NotFoundException {
         return this.repo.findById(id).orElseThrow(() -> new NotFoundException("User with id:" + id + " not found."));
+    }
+
+    @Transactional
+    public UserEntity saveNewAnonymousUser() {
+        UserEntity user = UserEntity.builder()
+                .role(Role.ANONYMOUS)
+                .build();
+
+        this.repo.save(user);
+
+        return user;
     }
 
     @Transactional
@@ -137,27 +155,31 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserEntity findUserByEmail(String email) throws NotFoundException {
-        return this.repo.findByEmail(email)
-                .orElseThrow(() ->
-                        new NotFoundException("User with email: " + email + " not found.")
-                );
+        return this.repo.findByEmail(email).orElse(null);
     }
 
     @Transactional(readOnly = true)
     public String authenticate(AuthenticateUserRequestDto req)
             throws NotFoundException, IncorrectPasswordException {
-        if (!this.repo.existsByEmail(req.getEmail())) {
+        UserEntity user = this.findUserByEmail(req.getEmail());
+
+        if (user == null) {
             throw new NotFoundException("User with email: " + req.getEmail() + " not found.");
         }
-
-        UserEntity user = this.findUserByEmail(req.getEmail());
 
         if (!PasswordEncryptor.matches(req.getPassword(), user.getPassword())) {
             throw new IncorrectPasswordException();
         }
+        if (LoginAttemptTools.isBlocked(user.getEmail())) {
+            long millis = LoginAttemptTools.getMillsToUnlock(user.getEmail()) - System.currentTimeMillis();
 
-        // TODO: implement jwt token generation and implementation
-        return "JWT token";
+            long minutes = TimeUnit.MILLISECONDS.toMinutes(millis);
+            long seconds = TimeUnit.MILLISECONDS.toSeconds(millis) - TimeUnit.MINUTES.toSeconds(minutes);
+            throw new LoginBlockedException(minutes, seconds);
+        }
+
+        UserDetails userDetails = UserMapper.fromEntityToDetails(user);
+        return this.jwtService.generateToken(userDetails);
     }
 
     public boolean existsById(int id) {

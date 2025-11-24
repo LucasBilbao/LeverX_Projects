@@ -4,8 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 @Getter
@@ -21,6 +22,7 @@ public class CommentRequestDto {
     )
     private String message;
 
-    @Pattern(regexp = "[1-5]", message = "Rating must be one of the following: 1, 2, 3, 4, 5")
+    @Min(value = 1, message = "Rating must be one of the following: 1, 2, 3, 4, 5")
+    @Max(value = 5, message = "Rating must be one of the following: 1, 2, 3, 4, 5")
     private Short rating;
 }

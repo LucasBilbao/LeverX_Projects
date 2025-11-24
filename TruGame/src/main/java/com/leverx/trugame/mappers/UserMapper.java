@@ -3,7 +3,9 @@ package com.leverx.trugame.mappers;
 import com.leverx.trugame.entities.UserEntity;
 import com.leverx.trugame.requests.users.RegisterUserRequestDto;
 import com.leverx.trugame.responses.UserResponseDto;
+import com.leverx.trugame.security.CustomUserDetails;
 import com.leverx.trugame.utils.PasswordEncryptor;
+import org.springframework.security.core.userdetails.UserDetails;
 
 public class UserMapper {
 
@@ -24,6 +26,12 @@ public class UserMapper {
                 .email(req.getEmail())
                 .password(PasswordEncryptor.hashPassword(req.getPassword()))
                 .role(req.getRole())
+                .build();
+    }
+
+    public static UserDetails fromEntityToDetails(UserEntity entity) {
+        return CustomUserDetails.builder()
+                .user(entity)
                 .build();
     }
 }

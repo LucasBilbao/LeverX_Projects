@@ -10,6 +10,7 @@ import com.leverx.trugame.web.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.security.PermitAll;
 import javax.validation.Valid;
 
 @RequiredArgsConstructor
@@ -29,6 +31,7 @@ public class GameController extends BaseController {
 
     private final GameService gameService;
 
+    @PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse> updateGame(
             @PathVariable int id,
@@ -43,6 +46,7 @@ public class GameController extends BaseController {
         });
     }
 
+    @PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")
     @PostMapping
     public ResponseEntity<ApiResponse> createGame(
             @Valid
@@ -59,6 +63,7 @@ public class GameController extends BaseController {
         });
     }
 
+    @PermitAll
     @GetMapping
     public ResponseEntity<ApiResponse> getGames() {
         return this.run(() ->
@@ -71,6 +76,7 @@ public class GameController extends BaseController {
         );
     }
 
+    @PermitAll
     @GetMapping("/{gameId}")
     public ResponseEntity<ApiResponse> getGameById(@PathVariable int gameId) {
         return this.run(() ->
@@ -82,6 +88,7 @@ public class GameController extends BaseController {
         );
     }
 
+    @PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")
     @DeleteMapping("/{gameId}")
     public ResponseEntity<ApiResponse> deleteGame(@PathVariable int gameId) {
         return this.run(() -> {

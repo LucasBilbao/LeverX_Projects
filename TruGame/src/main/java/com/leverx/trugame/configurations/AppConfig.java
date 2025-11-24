@@ -18,6 +18,7 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.validation.Validator;
@@ -37,6 +38,7 @@ import java.util.concurrent.Executor;
 @EnableAsync
 @EnableWebMvc
 @Configuration
+@EnableWebSecurity
 @EnableTransactionManagement
 @PropertySource("classpath:application.properties")
 @ComponentScan(basePackages = {"com.leverx.trugame"})

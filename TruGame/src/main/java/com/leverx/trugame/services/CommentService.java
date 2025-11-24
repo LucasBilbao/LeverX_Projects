@@ -8,7 +8,10 @@ import com.leverx.trugame.mappers.CommentMapper;
 import com.leverx.trugame.repositories.CommentRepository;
 import com.leverx.trugame.requests.comments.CreateCommentRequestDto;
 import com.leverx.trugame.requests.comments.UpdateCommentRequestDto;
+import com.leverx.trugame.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,10 +59,27 @@ public class CommentService {
 
     @Transactional
     public CommentEntity saveComment(int gameId, CreateCommentRequestDto req) throws NotFoundException {
-        // TODO: implement getting user by authorization/authentication
-        UserEntity user = this.userService.findUserById(1000);
-        GameEntity game = this.gameService.findGameById(gameId);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return null;
+        }
+        UserEntity user = null;
+
+        if (
+                authentication.getPrincipal() instanceof String &&
+                        authentication.getPrincipal().equals("anonymousUser")
+        ) {
+            user = this.userService.saveNewAnonymousUser();
+
+        } else {
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+            int id = userDetails.getId();
+            user = this.userService.findUserById(id);
+        }
+
+        GameEntity game = this.gameService.findGameById(gameId);
         CommentEntity comment = CommentMapper.fromRequestToEntity(req, user, game);
 
         this.repo.save(comment);
